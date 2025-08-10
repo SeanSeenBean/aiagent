@@ -29,21 +29,27 @@ def run_python_file(working_directory, file_path, args=[]):
     # print (f'absolute working directory: {abs_working_directory}')
     
     try:
+        commands = ['uv', 'run', absolute_path]
+        if args:
+            commands.extend(args)
+        
         result = subprocess.run(
-            (['uv', 'run', absolute_path] + args),
+            commands,
             capture_output=True,
-            cwd=os.path.dirname(abs_working_directory),
+            cwd=abs_working_directory,
             timeout=30,
             text=True
         ) #input=None,
-       
+        
+        output = []
+        
+        if result.stdout:
+            output.append(f"STDOUT:\n{result.stdout}")
+        if result.stderr:
+            output.append(f"STDERR:\n{result.stderr}")
+
+        if result.returncode != 0:
+            output.append(f"Process exited with code {result.returncode}")
+        return "\n".join(output) if output else "No output produced."
     except subprocess.CalledProcessError as e:
         return f"Error: executing Python file: {e}"
-    formatted_output = f"STDOUT: {result.stdout}\n STDERR: {result.stderr}"
-    if result.returncode != 0:
-        return (formatted_output + f'\nProcess exited with code {result.returncode}' )
-    if len(result.stdout) == 0:
-        return "No output produced"
-    
-    
-    return  formatted_output
