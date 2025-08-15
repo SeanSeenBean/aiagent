@@ -1,5 +1,27 @@
 import os
 import subprocess
+from google.genai import types
+
+schema_run_python_file = types.FunctionDeclaration(
+    name="run_python_file",
+    description="Runs a specified python script, with arguments if provided, constrained to the working directory.",
+    parameters=types.Schema(
+        type=types.Type.OBJECT,
+        properties={
+            "file_path": types.Schema(
+                type=types.Type.STRING,
+                description="The file path of the python script, relative to the working directory",
+            ),
+            "args": types.Schema(
+                type=types.Type.ARRAY,
+                description="An optional list of any additional arguments provided for function call.",
+                items = types.Schema(
+                    type = types.Type.STRING
+                )
+            ),
+        },
+    ),
+)
 
 def run_python_file(working_directory, file_path, args=[]):
     absolute_path = os.path.abspath(os.path.join(working_directory, file_path))
@@ -11,22 +33,6 @@ def run_python_file(working_directory, file_path, args=[]):
         return f'Error: File "{file_path}" not found.'
     if not file_path.endswith(".py"):
         return f'Error: "{file_path}" is not a Python file.'
-        
-    # Use the subprocess.run function to execute the Python file and get back a "completed_process" object. Make sure to:
-    #     Set a timeout of 30 seconds to prevent infinite execution
-    #     Capture both stdout and stderr
-    #     Set the working directory properly
-    #     Pass along the additional args if provided    
-    # Return a string with the output formatted to include:    
-    #     The stdout prefixed with STDOUT:, and stderr prefixed with STDERR:. The "completed_process" object has a stdout and stderr attribute.
-    #     If the process exits with a non-zero code, include "Process exited with code X"
-    #     If no output is produced, return "No output produced."
-    
-    # If any exceptions occur during execution, catch them and return an error string: 
-    # print(f'file path: {file_path}')
-    # print(f'absolute file path {absolute_path}')
-    # print(f'working directory: {working_directory}')
-    # print (f'absolute working directory: {abs_working_directory}')
     
     try:
         commands = ['uv', 'run', absolute_path]
