@@ -23,18 +23,19 @@ def write_file(working_directory, file_path, content):
     #checks if file_path is within the working_directory
     absolute_path = os.path.abspath(os.path.join(working_directory, file_path))
     working_directory = os.path.abspath(working_directory)
-        
+    print(f"absolute path: {absolute_path}")
+    print(f"Working Directory: {working_directory}")
     if not absolute_path.startswith(working_directory):
         return f'Error: Cannot read "{file_path}" as it is outside the permitted working directory'
     if not os.path.exists(absolute_path):
         try:
-            os.makedirs(os.path.dirname(file_path), exist_ok=True)
+            os.makedirs(os.path.dirname(absolute_path), exist_ok=True)
         except Exception as e:
             return f"Error: creating directory: {e}"
             
     #check for file existance, create 
     try:        
-        with open(file_path, "w") as file:
+        with open(absolute_path, "w") as file:
             file.write(content)
         return f'Successfully wrote to "{file_path}" ({len(content)} characters written)'
         

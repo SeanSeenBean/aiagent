@@ -7,7 +7,7 @@ from functions.get_files_info import schema_get_files_info
 from functions.get_file_content import schema_get_file_content
 from functions.write_file import schema_write_file
 from functions.run_python import schema_run_python_file
-
+from functions.call_function import call_function
 
 load_dotenv()
 api_key = os.environ.get("GEMINI_API_KEY")
@@ -23,6 +23,8 @@ available_functions = types.Tool(
     ]
 )
 
+
+
 system_prompt = """
 You are a helpful AI coding agent.
 
@@ -37,6 +39,8 @@ All paths you provide should be relative to the working directory. You do not ne
 """
 
 def main():
+    verbose = False
+    
     if len(sys.argv) >= 2:
         user_prompt = sys.argv[1]
         
@@ -58,6 +62,7 @@ def main():
         raise Exception("Invalid Input, program requires a single argument")
         sys.exit(1)
     if "--verbose" in sys.argv:
+        verbose = True
         print(
             f"User prompt: {user_prompt} \n"
             f"Prompt tokens: {response.usage_metadata.prompt_token_count} \n"
@@ -65,7 +70,14 @@ def main():
         )
     if response.function_calls:
         for function_call in response.function_calls:
-            print(f"Calling function: {function_call.name}({function_call.args})")
+            # print(f"Calling function: {function_call.name}({function_call.args})")
+            function_call_result = call_function(function_call, verbose)
+            if not function_call_result.parts[0].function_response.response:
+                raise Exception("Fatal exception empty response from function")
+                sys.exit()
+            if function_call_result.parts[0].function_response.response and verbose:
+                print(f"-> {function_call_result.parts[0].function_response.response}")
+                
     print(f"Text Response:\n{response.text}")
 
 
