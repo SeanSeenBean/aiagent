@@ -33,10 +33,14 @@ def main():
     
     messages = [
         types.Content(role="user", parts=[types.Part(text=user_prompt)]),
+        
     ]
     
     generate_content(client, messages, verbose)
     print(f"messages: {messages}")
+    
+
+
     
 def generate_content(client, messages, verbose):
     response = client.models.generate_content(
@@ -47,7 +51,7 @@ def generate_content(client, messages, verbose):
             system_instruction=system_prompt
         ),
     )
-    
+    messages.append(types.Content(role="model", parts=[types.Part(text=response.text)]))
     if verbose:
         print(
             f"Prompt tokens: {response.usage_metadata.prompt_token_count} \n"
@@ -71,6 +75,7 @@ def generate_content(client, messages, verbose):
             print(f"-> {function_call_result.parts[0].function_response.response}")
         
         function_responses.append(function_call_result.parts[0])
+        
             
     if not function_responses:
         raise Exception("no function responses generated, exiting")
